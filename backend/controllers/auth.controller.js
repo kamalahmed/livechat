@@ -28,12 +28,11 @@ export const signup = async (req, res) => {
       username,
       password: hashedPassword,
       gender,
-      profilePicture:
-        gender === "male" ? boyProfilePicture : girlProfilePicture,
+      profilePicture: gender === "male" ? boyProfilePicture : girlProfilePicture,
     });
 
     if (!newUser) {
-      return res.status(400).json({error: "Error happened in signup: Invalid user data"});
+      return res.status(400).json({ error: "Error happened in signup: Invalid user data" });
     }
 
     await newUser.save(); // save the new user to the database
@@ -54,7 +53,6 @@ export const signup = async (req, res) => {
 };
 
 export const login = async (req, res) => {
-
   try {
     const { username, password } = req.body;
 
@@ -81,8 +79,13 @@ export const login = async (req, res) => {
     console.log("Error happened in login: auth controller: ", error.message);
     res.status(500).send({ error: error.message });
   }
-  
 };
 export const logout = (req, res) => {
-  res.send("Logout Page");
+  try {
+    res.clearCookie("token");
+    res.status(200).json({ message: "Successfully logged out" });
+  } catch (error) {
+    console.log("Error happened in logout: auth controller: ", error.message);
+    res.status(500).send({ error: error.message });
+  }
 };
