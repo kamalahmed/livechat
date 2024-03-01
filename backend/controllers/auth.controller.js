@@ -1,6 +1,7 @@
 import User from "../models/user.model.js";
 
 import bcrypt from "bcryptjs";
+import generateTokenAndSetCookie from "../utils/generateToken.js";
 
 export const signup = async (req, res) => {
   try {
@@ -35,7 +36,10 @@ export const signup = async (req, res) => {
       return res.status(400).json({error: "Error happened in signup: Invalid user data"});
     }
 
-    await newUser.save();
+    await newUser.save(); // save the new user to the database
+
+    generateTokenAndSetCookie(newUser._id, res); // generate a token and set it as a cookie
+
     res.status(201).json({
       _id: newUser._id,
       fullname: newUser.fullname,
