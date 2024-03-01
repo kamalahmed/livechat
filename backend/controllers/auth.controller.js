@@ -54,7 +54,34 @@ export const signup = async (req, res) => {
 };
 
 export const login = async (req, res) => {
-  res.send("Login Page");
+
+  try {
+    const { username, password } = req.body;
+
+    const user = await User.findOne({ username });
+    if (!user) {
+      return res.status(400).send("User does not exist");
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+      return res.status(400).send("Invalid password");
+    }
+
+    generateTokenAndSetCookie(user._id, res);
+
+    res.status(200).json({
+      _id: user._id,
+      fullname: user.fullname,
+      username: user.username,
+      gender: user.gender,
+      profilePicture: user.profilePicture,
+    });
+  } catch (error) {
+    console.log("Error happened in login: auth controller: ", error.message);
+    res.status(500).send({ error: error.message });
+  }
+  
 };
 export const logout = (req, res) => {
   res.send("Logout Page");
