@@ -15,7 +15,7 @@ export const sendMessage = async (req, res) => {
     // if the conversation does not exist, create a new conversation
     if (!conversation) {
       conversation = await Conversation.create({
-        participants: [receiverId, senderId],
+        participants: [senderId, receiverId],
       });
     }
     // if the conversation already exists, add the sender to the conversation
@@ -50,6 +50,27 @@ export const sendMessage = async (req, res) => {
     });
   } catch (error) {
     console.log("Error happened in sending message");
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+export const getMessages = async (req, res) => {
+  try {
+    const { id: receiverId } = req.params; // id is the user's id of the reciever
+    const senderId = req.user._id; // get the id of the sender from the authenticated user
+
+    // find the conversation that the sender and receiver are in
+    let conversation = await Conversation.findOne({
+      participants: { $all: [senderId, receiverId] },
+    }).populate("messages");
+
+    if (conversation) {
+      res.status(200).json(conversation.messages);
+    } else {
+      res.status(404).json({ error: "Conversation not found" });
+    }
+  } catch (error) {
+    console.log("Error happened in getting messages: ", error.message);
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
